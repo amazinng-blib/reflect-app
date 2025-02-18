@@ -1,7 +1,7 @@
 import React from 'react';
 
-const layout = () => {
-  return <div>layout</div>;
+const layout = ({ children }) => {
+  return <div className="container mx-auto">{children}</div>;
 };
 
 export default layout;
