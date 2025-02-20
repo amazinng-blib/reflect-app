@@ -30,7 +30,7 @@ model Collection {
   id          String   @id @default(cuid())
   name        String
   description String?
-  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
   entries     Entry[]
   createdAt   DateTime @default(now())
@@ -40,18 +40,18 @@ model Collection {
 }
 
 model Entry {
-  id           String     @id @default(cuid())
+  id           String      @id @default(cuid())
   title        String
-  content      String     @db.Text
-  User         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content      String      @db.Text
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String
   mood         String
   moodScore    Int
   moodImageUrl String?
-  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
-  collectionId String
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
 model Draft {
