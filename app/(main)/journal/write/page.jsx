@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import 'react-quill-new/dist/quill.snow.css';
 //prevent server side rendering in client component
@@ -13,9 +13,7 @@ import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -25,13 +23,28 @@ import useFetch from '@/hooks/useFetch';
 import { createJournal } from '@/actions/journal';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { createCollection, getCollections } from '@/actions/collection';
+import CollectionForm from '@/components/collection-dialog';
 
 const JournalEntryPage = () => {
+  const [isCollectionDailogOpen, setIsCollectionDialogOpen] = useState(false);
   const {
     loading: actionLoading,
     fn: actionFn,
     data: actionResult,
   } = useFetch(createJournal);
+
+  const {
+    loading: collectionLoading,
+    fn: fetchCollectionsFn,
+    data: collectionResult,
+  } = useFetch(getCollections);
+
+  const {
+    loading: createCollectionLoading,
+    fn: createCollectionFn,
+    data: createCollectionResult,
+  } = useFetch(createCollection);
 
   const router = useRouter();
 
@@ -42,6 +55,7 @@ const JournalEntryPage = () => {
     control,
     formState: { errors },
     getValues,
+    setValue,
   } = useForm({
     resolver: zodResolver(journalSchema),
     defaultValues: {
@@ -52,8 +66,6 @@ const JournalEntryPage = () => {
     },
   });
 
-  const isLoading = actionLoading;
-
   const onSubmit = handleSubmit(async (data) => {
     const mood = getMoodById(data.mood);
     actionFn({
@@ -62,6 +74,14 @@ const JournalEntryPage = () => {
       moodQuery: mood.pixabayQuery,
     });
   });
+
+  const handleCreateCollection = async (data) => {
+    createCollectionFn(data);
+  };
+
+  useEffect(() => {
+    fetchCollectionsFn();
+  }, []);
 
   useEffect(() => {
     if (actionResult && !actionLoading) {
@@ -75,6 +95,18 @@ const JournalEntryPage = () => {
     }
   }, [actionResult, actionLoading]);
 
+  useEffect(() => {
+    if (createCollectionResult) {
+      setIsCollectionDialogOpen(false);
+      fetchCollectionsFn();
+      setValue('collectionId', createCollectionResult.id);
+
+      toast.success(`Collection ${createCollectionResult.name} created`);
+    }
+  }, [createCollectionResult]);
+
+  const isLoading =
+    actionLoading || collectionLoading || createCollectionLoading;
   return (
     <div className="py-8">
       <form className="space-y-2 mx-auto" onSubmit={onSubmit}>
@@ -174,13 +206,41 @@ const JournalEntryPage = () => {
             Add to Collection (Optional)
           </label>
 
-          {/* <Controller
-            name="content"
+          <Controller
+            name="collectionId"
             control={control}
             render={({ field }) => (
-          
+              <Select
+                onValueChange={(value) => {
+                  if (value === 'new') {
+                    setIsCollectionDialogOpen(true);
+                  } else {
+                    field.onChange;
+                  }
+                }}
+                value={field.value}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a collection..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {collectionResult?.map((collection) => {
+                    return (
+                      <SelectItem key={collection.id} value={collection.id}>
+                        {collection.name}
+                      </SelectItem>
+                    );
+                  })}
+
+                  <SelectItem value="new">
+                    <span className="text-orange-600 cursor-pointer">
+                      + Create New Collection
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             )}
-          /> */}
+          />
           {errors.collectionId && (
             <p className="text-red-500 text-sm">
               {errors.collectionId.message}
@@ -189,11 +249,18 @@ const JournalEntryPage = () => {
         </div>
 
         <div className="space-y-4 flex">
-          <Button type="submit" variant="journal">
+          <Button type="submit" variant="journal" disabled={isLoading}>
             Publish
           </Button>
         </div>
       </form>
+
+      <CollectionForm
+        loading={createCollectionLoading}
+        onSuccess={handleCreateCollection}
+        open={isCollectionDailogOpen}
+        setOpen={setIsCollectionDialogOpen}
+      />
     </div>
   );
 };

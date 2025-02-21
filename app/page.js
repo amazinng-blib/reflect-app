@@ -108,7 +108,7 @@ export default async function Home() {
         className="mt-24 grid md:grid-cols-2 lg:grid-cols-3 gap-8"
       >
         {features?.map((feature, index) => (
-          <Card className="shadoww-lg" key={index}>
+          <Card className="shadow-lg" key={index}>
             <CardContent className="p-6">
               <div className="h-12 w-12 bg-orange-100 rounded-full flex items-center justify-center mb-4">
                 <feature.icon className="h-6 w-6text-orange-600" />
@@ -147,14 +147,14 @@ export default async function Home() {
           </div>
           <div className="space-y-4 bg-white rounded-2xl shadow-xl p-6 border border-orange-100">
             <div className="flex gap-2 mb-6">
-              <div className="h-8 w-8 rounded bg-orange-100" />
-              <div className="h-8 w-8 rounded bg-orange-100" />
-              <div className="h-8 w-8 rounded bg-orange-100" />
+              <Skeleton className="h-8 w-8 rounded bg-orange-100" />
+              <Skeleton className="h-8 w-8 rounded bg-orange-100" />
+              <Skeleton className="h-8 w-8 rounded bg-orange-100" />
             </div>
-            <div className={'h-4 bg-orange-100 w-3/4'} />
-            <div className={'h-4 bg-orange-100 w-full'} />
-            <div className={'h-4 bg-orange-100 w-2/3'} />
-            <div className={'h-4 bg-orange-100 w-1/3'} />
+            <Skeleton className={'h-4 bg-orange-100 w-3/4'} />
+            <Skeleton className={'h-4 bg-orange-100 w-full'} />
+            <Skeleton className={'h-4 bg-orange-100 w-2/3'} />
+            <Skeleton className={'h-4 bg-orange-100 w-1/3'} />
           </div>
         </div>
 
