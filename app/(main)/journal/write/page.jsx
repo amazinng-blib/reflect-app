@@ -20,19 +20,47 @@ import {
 import { getMoodById, MOODS } from '@/app/lib/moods';
 import { Button } from '@/components/ui/button';
 import useFetch from '@/hooks/useFetch';
-import { createJournal } from '@/actions/journal';
-import { useRouter } from 'next/navigation';
+import {
+  createJournal,
+  getDraft,
+  getJournalEntry,
+  saveDraft,
+  updateJournalEntry,
+} from '@/actions/journal';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { createCollection, getCollections } from '@/actions/collection';
 import CollectionForm from '@/components/collection-dialog';
+import { Loader2 } from 'lucide-react';
 
 const JournalEntryPage = () => {
   const [isCollectionDailogOpen, setIsCollectionDialogOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const editId = searchParams.get('edit');
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const {
+    loading: entryLoading,
+    fn: fetchEntry,
+    data: existingEntry,
+  } = useFetch(getJournalEntry);
+
+  const {
+    loading: draftLoading,
+    fn: fetchDraft,
+    data: draftData,
+  } = useFetch(getDraft);
+  const {
+    loading: saveDraftLoading,
+    fn: saveDraftFn,
+    data: savedDraft,
+  } = useFetch(saveDraft);
+
   const {
     loading: actionLoading,
     fn: actionFn,
     data: actionResult,
-  } = useFetch(createJournal);
+  } = useFetch(isEditMode ? updateJournalEntry : createJournal);
 
   const {
     loading: collectionLoading,
@@ -53,9 +81,10 @@ const JournalEntryPage = () => {
     handleSubmit,
     watch,
     control,
-    formState: { errors },
+    formState: { errors, isDirty },
     getValues,
     setValue,
+    reset,
   } = useForm({
     resolver: zodResolver(journalSchema),
     defaultValues: {
@@ -68,12 +97,23 @@ const JournalEntryPage = () => {
 
   const onSubmit = handleSubmit(async (data) => {
     const mood = getMoodById(data.mood);
-    actionFn({
+    await actionFn({
       ...data,
       moodScore: mood.score,
       moodQuery: mood.pixabayQuery,
+      ...(isEditMode && { id: editId }),
     });
   });
+
+  const formData = watch();
+
+  const handleSaveDraft = async () => {
+    if (!isDirty) {
+      toast.error('No changes to save');
+      return;
+    }
+    await saveDraftFn(formData);
+  };
 
   const handleCreateCollection = async (data) => {
     createCollectionFn(data);
@@ -84,14 +124,59 @@ const JournalEntryPage = () => {
   }, []);
 
   useEffect(() => {
+    if (savedDraft?.success && !saveDraftLoading) {
+      toast.success('Draft saved successfully');
+    }
+  }, [savedDraft, saveDraftLoading]);
+  useEffect(() => {
+    if (editId) {
+      setIsEditMode(true);
+      fetchEntry(editId);
+    } else {
+      fetchDraft();
+      setIsEditMode(false);
+    }
+  }, [editId]);
+
+  useEffect(() => {
+    if (isEditMode && existingEntry) {
+      reset({
+        title: existingEntry.title || '',
+        content: existingEntry.content || '',
+        mood: existingEntry.mood || '',
+        collectionId: existingEntry.collectionId || '',
+      });
+    } else if (draftData?.success && draftData?.data) {
+      reset({
+        title: draftData.data.title || '',
+        content: draftData.data.content || '',
+        mood: draftData.data.mood || '',
+        collectionId: draftData.data.collectionId || '',
+      });
+    } else {
+      reset({
+        title: '',
+        content: '',
+        mood: '',
+        collectionId: '',
+      });
+    }
+  }, [draftData, isEditMode, existingEntry]);
+
+  useEffect(() => {
     if (actionResult && !actionLoading) {
+      if (!isEditMode) {
+        saveDraftFn({ title: '', content: '', mood: '' });
+      }
       router.push(
         `/collection/${
           actionResult.collectionId ? actionResult.collectionId : 'unorganized'
         }`
       );
 
-      toast.success(`Entry created successfully`);
+      toast.success(
+        `Entry ${isEditMode ? ' updated ' : ' created '} created successfully`
+      );
     }
   }, [actionResult, actionLoading]);
 
@@ -106,12 +191,17 @@ const JournalEntryPage = () => {
   }, [createCollectionResult]);
 
   const isLoading =
-    actionLoading || collectionLoading || createCollectionLoading;
+    actionLoading ||
+    collectionLoading ||
+    createCollectionLoading ||
+    entryLoading ||
+    draftLoading ||
+    saveDraftLoading;
   return (
     <div className="py-8">
       <form className="space-y-2 mx-auto" onSubmit={onSubmit}>
         <h1 className="text-5xl md:text-6xl gradient-title mb-2">
-          What&apos;s on your mind?
+          {isEditMode ? 'Edit Entry' : "What's on your mind?"}
         </h1>
 
         {isLoading && <BarLoader color="orange" width={'100%'} />}
@@ -215,7 +305,7 @@ const JournalEntryPage = () => {
                   if (value === 'new') {
                     setIsCollectionDialogOpen(true);
                   } else {
-                    field.onChange;
+                    field.onChange(value);
                   }
                 }}
                 value={field.value}
@@ -248,10 +338,38 @@ const JournalEntryPage = () => {
           )}
         </div>
 
-        <div className="space-y-4 flex">
-          <Button type="submit" variant="journal" disabled={isLoading}>
-            Publish
+        <div className="space-x-4 flex">
+          {!isEditMode && (
+            <Button
+              onClick={handleSaveDraft}
+              variant="outline"
+              disabled={isLoading || !isDirty}
+            >
+              {saveDraftLoading && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Save as Draft
+            </Button>
+          )}
+          <Button
+            type="submit"
+            variant="journal"
+            disabled={isLoading || !isDirty}
+          >
+            {isEditMode ? 'Update' : 'Publish'}
           </Button>
+          {isEditMode && (
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                router.push(`collection/${existingEntry.id}`);
+              }}
+              variant="destructive"
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+          )}
         </div>
       </form>
 
