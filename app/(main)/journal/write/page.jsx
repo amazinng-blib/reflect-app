@@ -362,7 +362,7 @@ const JournalEntryPage = () => {
             <Button
               onClick={(e) => {
                 e.preventDefault();
-                router.push(`collection/${existingEntry.id}`);
+                router.push(`/journal/${existingEntry.id}`);
               }}
               variant="destructive"
               disabled={isLoading}
