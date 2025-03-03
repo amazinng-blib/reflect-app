@@ -85,7 +85,9 @@ const CollectionPreview = ({
         </div>
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-gray-600">
-            <span>{entries.length} entries </span>
+            <span>
+              {entries.length} {entries.length > 1 ? 'entries' : 'entry'}{' '}
+            </span>
             {entries?.length > 0 && (
               <span>
                 {formatDistanceToNow(new Date(entries[0].createdAt), {

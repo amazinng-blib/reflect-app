@@ -23,7 +23,8 @@ export default function RootLayout({ children }) {
           <Toaster richColors />
 
           <footer className="bg-orange-300 py-12 bg-opacity-10">
-            <div className="mx-auto px-4 text-center text-gray-900">
+            <div className="mx-auto px-4 text-center text-gray-900 italic flex justify-center gap-4 flex-wrap">
+              <p>Made with 💖 by Ernest.</p>
               <p>copyright &copy; 2025 Reflect </p>
             </div>
           </footer>

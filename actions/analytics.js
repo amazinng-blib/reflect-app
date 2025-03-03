@@ -62,6 +62,7 @@ export async function getAnalytics(period = '30d') {
     date,
     averageScore: Number((data.totalScore / data.count).toFixed(1)),
     entryCount: data.count,
+    entries: data.entries,
   }));
 
   // Calculate overall statistics

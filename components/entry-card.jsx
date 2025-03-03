@@ -10,7 +10,7 @@ const EntryCard = ({ entry }) => {
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 border-b">
                 <span className="text-2xl">{entry?.moodData?.emoji}</span>
                 <h3 className="font-semibold text-lg">{entry?.title}</h3>
               </div>
