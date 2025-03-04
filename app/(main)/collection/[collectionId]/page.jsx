@@ -5,7 +5,7 @@ import JournalFilters from '../_components/journal-filters';
 import { getCollection } from '@/actions/collection';
 
 const CollectionPage = async ({ params }) => {
-  const { collectionId } = params;
+  const { collectionId } = await params;
 
   const entries = await getJournalEntries({ collectionId });
   const collection = await getCollection(collectionId);
