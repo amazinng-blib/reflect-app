@@ -53,7 +53,7 @@ export default async function Home() {
         </h1>
         <p className="text-lg md:text-xl text-orange-800 mb-8">
           Capture your thoughts, track your moods, and reflect on your journey
-          ina beautiful, secure space
+          in a beautiful, secure space
         </p>
       </div>
       <div className="relative">
