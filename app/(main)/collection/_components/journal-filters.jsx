@@ -53,7 +53,7 @@ const JournalFilters = ({ entries = [] }) => {
     }
 
     setFilteredEntries(filtered);
-  }, [searchQuery, selectedMood, date, entries]); // ✅ Added `entries`
+  }, [searchQuery, selectedMood, date]); // ✅ Added `entries`
 
   const clearFilters = () => {
     setSearchQuery('');
