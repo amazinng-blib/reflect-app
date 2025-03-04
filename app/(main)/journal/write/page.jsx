@@ -46,15 +46,16 @@ const JournalEntryPage = () => {
   } = useFetch(getJournalEntry);
 
   const {
-    loading: draftLoading,
-    fn: fetchDraft,
-    data: draftData,
-  } = useFetch(getDraft);
-  const {
     loading: saveDraftLoading,
     fn: saveDraftFn,
     data: savedDraft,
   } = useFetch(saveDraft);
+
+  const {
+    loading: draftLoading,
+    fn: fetchDraft,
+    data: draftData,
+  } = useFetch(getDraft);
 
   const {
     loading: actionLoading,
@@ -82,7 +83,6 @@ const JournalEntryPage = () => {
     watch,
     control,
     formState: { errors, isDirty },
-    getValues,
     setValue,
     reset,
   } = useForm({
@@ -105,8 +105,11 @@ const JournalEntryPage = () => {
     });
   });
 
-  const formData = watch();
+  const handleCreateCollection = async (data) => {
+    await createCollectionFn(data);
+  };
 
+  const formData = watch();
   const handleSaveDraft = async () => {
     if (!isDirty) {
       toast.error('No changes to save');
@@ -115,19 +118,16 @@ const JournalEntryPage = () => {
     await saveDraftFn(formData);
   };
 
-  const handleCreateCollection = async (data) => {
-    createCollectionFn(data);
-  };
-
   useEffect(() => {
     fetchCollectionsFn();
   }, []);
 
   useEffect(() => {
-    if (savedDraft?.success && !saveDraftLoading) {
+    if (savedDraft?.data && !saveDraftLoading) {
       toast.success('Draft saved successfully');
     }
   }, [savedDraft, saveDraftLoading]);
+
   useEffect(() => {
     if (editId) {
       setIsEditMode(true);
@@ -165,9 +165,6 @@ const JournalEntryPage = () => {
 
   useEffect(() => {
     if (actionResult && !actionLoading) {
-      if (!isEditMode) {
-        saveDraftFn({ title: '', content: '', mood: '' });
-      }
       router.push(
         `/collection/${
           actionResult.collectionId ? actionResult.collectionId : 'unorganized'
@@ -338,9 +335,10 @@ const JournalEntryPage = () => {
           )}
         </div>
 
-        <div className="space-x-4 flex">
+        <div className="space-x-4 flex gap-2">
           {!isEditMode && (
             <Button
+              type="button"
               onClick={handleSaveDraft}
               variant="outline"
               disabled={isLoading || !isDirty}
@@ -351,6 +349,7 @@ const JournalEntryPage = () => {
               Save as Draft
             </Button>
           )}
+
           <Button
             type="submit"
             variant="journal"
@@ -358,6 +357,7 @@ const JournalEntryPage = () => {
           >
             {isEditMode ? 'Update' : 'Publish'}
           </Button>
+
           {isEditMode && (
             <Button
               onClick={(e) => {
