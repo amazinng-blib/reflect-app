@@ -26,37 +26,33 @@ const JournalFilters = ({ entries = [] }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMood, setSelectedMood] = useState('');
   const [date, setDate] = useState('');
-  const [filteredEntries, setFilteredEntries] = useState([]);
+  const [filteredEntries, setFilteredEntries] = useState(entries);
 
   useEffect(() => {
-    if (searchQuery || selectedMood || date) {
-      let filtered = entries;
+    let filtered = entries;
 
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        filtered = filtered.filter(
-          (entry) =>
-            entry?.title?.toLowerCase().includes(query) ||
-            entry?.content?.toLowerCase().includes(query)
-        );
-      }
-
-      // Apply mood filter
-      if (selectedMood) {
-        filtered = filtered.filter((entry) => entry.mood === selectedMood);
-      }
-
-      // Apply date filter
-      if (date) {
-        filtered = filtered.filter(
-          (entry) => isSameDay(new Date(entry.createdAt), new Date(date)) // Ensure `date` is a Date object
-        );
-      }
-
-      setFilteredEntries(filtered);
-    } else {
-      setFilteredEntries(entries);
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (entry) =>
+          entry?.title?.toLowerCase().includes(query) ||
+          entry?.content?.toLowerCase().includes(query)
+      );
     }
+
+    // Apply mood filter
+    if (selectedMood) {
+      filtered = filtered.filter((entry) => entry.mood === selectedMood);
+    }
+
+    // Apply date filter
+    if (date) {
+      filtered = filtered.filter(
+        (entry) => isSameDay(new Date(entry.createdAt), new Date(date)) // Ensure `date` is a Date object
+      );
+    }
+
+    setFilteredEntries(filtered);
   }, [searchQuery, selectedMood, date, entries]); // ✅ Added `entries`
 
   const clearFilters = () => {
