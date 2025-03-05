@@ -119,6 +119,7 @@ const JournalEntryPage = () => {
   };
 
   useEffect(() => {
+    router.refresh();
     fetchCollectionsFn();
   }, []);
 
