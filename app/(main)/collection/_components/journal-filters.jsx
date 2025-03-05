@@ -125,7 +125,8 @@ const JournalFilters = ({ entries = [] }) => {
       </div>
 
       <div className="text-sm text-gray-500">
-        Showing {filteredEntries.length} of {entries.length} entries
+        Showing {filteredEntries.length} of {entries.length}{' '}
+        {entries.length > 1 ? 'entries' : 'entry'}
       </div>
 
       {filteredEntries?.length === 0 ? (
