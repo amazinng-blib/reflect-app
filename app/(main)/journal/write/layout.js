@@ -1,6 +1,6 @@
 import Link from 'next/link';
-// import React, { Suspense } from 'react';
-// import { BarLoader } from 'react-spinners';
+import React, { Suspense } from 'react';
+import { BarLoader } from 'react-spinners';
 
 const WriteLayout = ({ children }) => {
   return (
@@ -11,9 +11,9 @@ const WriteLayout = ({ children }) => {
       >
         ⬅ Back to Dashboard
       </Link>
-      {/* <Suspense fallback={<BarLoader color="orange" width={'100%'} />}> */}
-      {children}
-      {/* </Suspense> */}
+      <Suspense fallback={<BarLoader color="orange" width={'100%'} />}>
+        {children}
+      </Suspense>
     </div>
   );
 };
